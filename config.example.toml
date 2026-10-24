@@ -1,0 +1,91 @@
+# Discord Defender configuration.
+# Copy this file to config.toml and fill in the [server] section; everything else
+# has sensible defaults. To copy an ID: User Settings → Advanced → turn on
+# Developer Mode, then right-click a server/channel/role → Copy ID.
+# Check your edits with:  discord-defender --check-config
+
+[server]
+guild_id = 0                 # your server's ID (required)
+mod_log_channel_id = 0       # private channel where alerts with action buttons are posted
+
+# Roles that are never auto-moderated except for known scam links (officers, advisors).
+# Anyone with Manage Messages, Moderate Members or Administrator is trusted automatically.
+trusted_role_ids = []
+
+# Honeypot: create a channel such as #do-not-post-here that says "Bots only: posting
+# here gets you muted." Hijacked accounts spam every channel they can see, including
+# this one, which catches them on the first message. Real members just ignore it.
+honeypot_channel_ids = []
+
+# Channels Defender should not look at at all (e.g. a staff-only channel).
+ignored_channel_ids = []
+
+# Invite codes that are always fine to post (your vanity URL, partner servers).
+# Invites to your own server are recognised automatically.
+allowed_invite_codes = []
+
+[actions]
+# Start with dry_run = true for a few days: alerts say what *would* happen and
+# nothing is deleted. Flip to false once you're happy with what it catches.
+dry_run = false
+
+# Score thresholds (see docs/how-it-works.md for what each signal is worth).
+flag_score = 40              # alert moderators, leave the message up
+delete_score = 70            # delete the message and alert
+timeout_score = 100          # delete, time out, and clean up the author's recent messages
+
+timeout_minutes = 1440       # 1 day; moderators can lift it with one click
+purge_minutes = 15           # on timeout, also delete their messages from this long ago
+dm_user = true               # DM timed-out members how to secure a hijacked account
+honeypot_action = "timeout"  # "timeout", "softban" (kick + purge, may rejoin) or "ban"
+alert_cooldown_seconds = 120 # one alert per member per window unless it escalates
+
+[newcomers]
+# Extra caution for people who just arrived. This never blocks joining or
+# chatting: it only adds `bonus` points when a message is *already* suspicious.
+member_hours = 72.0          # joined the server less than this long ago
+account_days = 30.0          # or the Discord account itself is younger than this
+bonus = 30
+
+[duplicates]
+# The signature of a hijacked account: the same post in many channels at once.
+window_seconds = 120.0
+channel_threshold = 3        # same message in this many different channels
+repeat_threshold = 5         # or this many times anywhere
+min_length = 15              # shorter text-only messages ("lol", "thanks!") are ignored
+
+[links]
+# Community-maintained lists of known scam domains, refreshed automatically.
+feeds = [
+  "https://raw.githubusercontent.com/nikolaischunk/discord-phishing-links/main/txt/domain-list.txt",
+  "https://raw.githubusercontent.com/Discord-AntiScam/scam-links/main/list.txt",
+]
+refresh_hours = 6.0
+cache_path = "data/blocklist-cache.txt"
+
+blocklist = []               # extra domains to always treat as scams
+allowlist = ["discord.js.org", "discordjs.guide", "discordpy.readthedocs.io"]  # never flagged
+
+# Protect other names from lookalike domains. Discord and Steam are built in.
+# A good one to add is your university's login domain, which phishers love:
+# [[links.extra_brands]]
+# name = "My University"
+# keywords = ["myuniversity"]     # the distinctive part of the domain
+# domains = ["myuniversity.edu"]  # the real domains (subdomains included)
+
+[heuristics]
+enabled = true
+max_score = 90               # phrase rules alone can delete but never time someone out
+disabled_rules = []          # e.g. ["selling_bait"] if your server has a marketplace channel
+
+# Add your own phrase rules (Python regular expressions, case-insensitive):
+# [[heuristics.extra_rules]]
+# name = "fake_scholarship"
+# pattern = "scholarship.{0,40}(processing fee|pay to apply)"
+# weight = 40
+# description = "Fake scholarship fee scam"
+
+[weights]
+# Override any signal's points, e.g.:
+# brand_domain = 30
+# server_invite = 20
