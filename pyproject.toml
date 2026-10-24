@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "discord-defender"
+dynamic = ["version"]
+description = "Open-source spam and phishing protection for Discord servers, with zero extra friction for new members."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = ["discord.py>=2.4,<3"]
+keywords = ["discord", "bot", "moderation", "anti-spam", "phishing"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Communications :: Chat",
+    "Framework :: AsyncIO",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[project.scripts]
+discord-defender = "discord_defender.__main__:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "discord_defender.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
